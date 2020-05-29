@@ -9,6 +9,29 @@ let frames = 0;
 const sprite = new Image();
 sprite.src = "img/sprite.png";
 
+// GAME STATE
+const state = {
+	current : 0, 
+	getReady : 0,
+	game : 1, 
+	over : 2
+}
+
+// CONTROL THE GAME
+cvs.addEventListener("click", function(evt) {
+	switch(state.current) {
+		case state.getReady : 
+			state.current = state.game;
+			break;
+		case state.game : 
+			bird.flap();
+			break;
+		case state.over :
+			state.current = state.getReady;
+			break;
+	}
+});
+
 // BACKGROUND
 const bg = {
 	sX : 0,
@@ -56,11 +79,37 @@ const bird = {
 	h : 26, 
 
 	frame : 0,
+	gravity : 0.25, 
+	jump : 4.5, 
+	speed : 0, 
 
 	draw : function(){
 		let bird = this.animation[this.frame];
 
 		ctx.drawImage(sprite, bird.sX, bird.sY, this.w, this.h, this.x - this.w/2, this.y - this.h/2, this.w, this.h);
+	}, 
+
+	flap : function(){
+		this.speed = -1 * this.jump;
+	}, 
+
+	update : function(){
+		// IF THE GAME STATE IS GET READY STATE, THE BIRD FLAPS SLOWLY
+		this.period = state.current == state.getReady ? 10 : 5;
+	
+		// INCREMENT THE FRAME BY 1 EACH PERIOD
+		this.frame += frames % this.period == 0 ? 1 : 0;
+
+		// FRAME LOOPS BETWEEN 0 and 4
+		this.frame = this.frame % this.animation.length;
+	
+		if(state.current == state.getReady) {
+		
+		}
+		else {
+			this.speed += this.gravity;
+			this.y += this.speed;
+		}
 	}
 }
 
@@ -74,7 +123,9 @@ const getReady = {
 	y : 80, 
 
 	draw : function(){
+		if(state.current == state.getReady){	
 		ctx.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
+		}
 	}
 }
 
@@ -88,7 +139,9 @@ const gameOver = {
 	y : 90, 
 
 	draw : function(){
-		ctx.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
+		if(state.current == state.over){
+			ctx.drawImage(sprite, this.sX, this.sY, this.w, this.h, this.x, this.y, this.w, this.h);
+		}
 	}
 }
 
@@ -106,6 +159,7 @@ function draw(){
  
 // UPDATE
 function update(){
+	bird.update();
 }
 
 // LOOP
